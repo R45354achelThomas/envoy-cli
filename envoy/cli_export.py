@@ -22,6 +22,16 @@ def _load_env_file(path: str) -> dict:
         sys.exit(1)
 
 
+def _write_output(result: str, output: str, env: dict, fmt: ExportFormat) -> None:
+    """Write export result to a file, exiting on error."""
+    try:
+        Path(output).write_text(result + "\n", encoding="utf-8")
+        print(f"Exported {len(env)} variable(s) to {output} [{fmt}]")
+    except OSError as exc:
+        print(f"Error writing to {output}: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+
 def run_export(
     env_file: str,
     fmt: ExportFormat = "dotenv",
@@ -44,11 +54,6 @@ def run_export(
         sys.exit(1)
 
     if output:
-        try:
-            Path(output).write_text(result + "\n", encoding="utf-8")
-            print(f"Exported {len(env)} variable(s) to {output} [{fmt}]")
-        except OSError as exc:
-            print(f"Error writing to {output}: {exc}", file=sys.stderr)
-            sys.exit(1)
+        _write_output(result, output, env, fmt)
     else:
         print(result)
