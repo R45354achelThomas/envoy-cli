@@ -11,11 +11,24 @@ from envoy.parser import EnvParser, EnvParseError
 
 
 def _load_env_file(path: str) -> dict[str, str]:
-    """Parse an .env file and return key/value pairs."""
+    """Parse an .env file and return key/value pairs.
+
+    Args:
+        path: Filesystem path to the .env file.
+
+    Returns:
+        A dictionary mapping variable names to their values.
+
+    Raises:
+        SystemExit: If the file is not found or cannot be parsed.
+    """
     try:
         return EnvParser(Path(path).read_text(encoding="utf-8")).parse()
     except FileNotFoundError:
         print(f"error: file not found: {path}", file=sys.stderr)
+        sys.exit(1)
+    except PermissionError:
+        print(f"error: permission denied: {path}", file=sys.stderr)
         sys.exit(1)
     except EnvParseError as exc:
         print(f"error: could not parse {path}: {exc}", file=sys.stderr)
@@ -39,7 +52,11 @@ def run_diff(
     output = format_diff(entries, mask_secrets=mask_secrets)
 
     if output_file:
-        Path(output_file).write_text(output, encoding="utf-8")
+        try:
+            Path(output_file).write_text(output, encoding="utf-8")
+        except PermissionError:
+            print(f"error: permission denied writing to: {output_file}", file=sys.stderr)
+            sys.exit(1)
     else:
         print(output, end="")
 
