@@ -49,6 +49,9 @@ def rotate(
     if not isinstance(env, dict):
         raise RotationError("env must be a dict")
 
+    if old_passphrase == new_passphrase:
+        raise RotationError("old_passphrase and new_passphrase must differ")
+
     candidates = keys if keys is not None else list(env.keys())
 
     missing = [k for k in candidates if k not in env]
