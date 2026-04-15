@@ -78,8 +78,13 @@ def load_snapshot(
     path = _snapshot_path(snapshot_dir, name)
     if not path.exists():
         raise SnapshotError(f"Snapshot '{name}' not found in {snapshot_dir}")
-    data = json.loads(path.read_text(encoding="utf-8"))
-    return Snapshot.from_dict(data)
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return Snapshot.from_dict(data)
+    except (KeyError, json.JSONDecodeError) as exc:
+        raise SnapshotError(
+            f"Snapshot '{name}' is corrupt or has an unexpected format: {exc}"
+        ) from exc
 
 
 def list_snapshots(snapshot_dir: Path = DEFAULT_SNAPSHOT_DIR) -> List[Snapshot]:
@@ -101,6 +106,3 @@ def delete_snapshot(
 ) -> None:
     """Delete a snapshot by name; raises SnapshotError if not found."""
     path = _snapshot_path(snapshot_dir, name)
-    if not path.exists():
-        raise SnapshotError(f"Snapshot '{name}' not found in {snapshot_dir}")
-    path.unlink()
