@@ -18,6 +18,25 @@ def _load_env_file(path: str) -> dict:
         sys.exit(1)
 
 
+def _load_schema(schema_path: str) -> dict:
+    """Load and return a JSON schema from *schema_path*.
+
+    Exits with a non-zero status and prints an error message to stderr if the
+    file cannot be read or is not valid JSON.
+    """
+    import json
+
+    try:
+        with open(schema_path) as fh:
+            return json.load(fh)
+    except OSError as exc:
+        print(f"[error] Cannot open schema {schema_path!r}: {exc}", file=sys.stderr)
+        sys.exit(1)
+    except json.JSONDecodeError as exc:
+        print(f"[error] Schema {schema_path!r} is not valid JSON: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+
 def run_compare(
     base_path: str,
     target_path: str,
@@ -33,15 +52,7 @@ def run_compare(
     base = _load_env_file(base_path)
     target = _load_env_file(target_path)
 
-    schema = None
-    if schema_path:
-        import json
-        try:
-            with open(schema_path) as fh:
-                schema = json.load(fh)
-        except (OSError, json.JSONDecodeError) as exc:
-            print(f"[error] Cannot read schema {schema_path!r}: {exc}", file=sys.stderr)
-            sys.exit(1)
+    schema = _load_schema(schema_path) if schema_path else None
 
     report = compare(
         base,
