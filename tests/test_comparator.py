@@ -95,3 +95,11 @@ def test_empty_target_all_removed():
     assert len(r.removed) == len(BASE)
     assert r.added == []
     assert r.changed == []
+
+
+def test_diff_entries_contains_all_changed_keys(report):
+    """diff_entries should include added, removed, and changed entries."""
+    diff_keys = {e.key for e in report.diff_entries}
+    assert {e.key for e in report.added} <= diff_keys
+    assert {e.key for e in report.removed} <= diff_keys
+    assert {e.key for e in report.changed} <= diff_keys
