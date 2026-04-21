@@ -25,8 +25,23 @@ class CastResult:
 _BOOL_TRUE = {"true", "1", "yes", "on"}
 _BOOL_FALSE = {"false", "0", "no", "off"}
 
+SUPPORTED_TYPES = {"int", "float", "bool", "list", "str"}
+
 
 def _cast_one(value: str, typ: str) -> Any:
+    """Cast a single string value to the given type name.
+
+    Args:
+        value: The raw string value to cast.
+        typ: The target type name. Must be one of: int, float, bool, list, str.
+
+    Returns:
+        The value cast to the requested type.
+
+    Raises:
+        CastError: If the value cannot be cast to the requested type,
+                   or if the type name is not recognised.
+    """
     if typ == "int":
         try:
             return int(value)
@@ -48,7 +63,7 @@ def _cast_one(value: str, typ: str) -> Any:
         return [item.strip() for item in value.split(",") if item.strip()]
     if typ == "str":
         return value
-    raise CastError(f"Unknown type {typ!r}")
+    raise CastError(f"Unknown type {typ!r}. Supported types: {sorted(SUPPORTED_TYPES)}")
 
 
 def cast(env: Dict[str, str], schema: Dict[str, str]) -> CastResult:
