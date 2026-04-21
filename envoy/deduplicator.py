@@ -37,6 +37,13 @@ def deduplicate(
         env: Ordered dict of key/value pairs.
         keep: 'first' keeps the first occurrence; 'last' keeps the last.
         ignore_keys: Keys to exclude from deduplication logic entirely.
+
+    Returns:
+        A DeduplicateResult containing the deduplicated env mapping,
+        the list of removed keys, and the list of kept keys.
+
+    Raises:
+        DeduplicateError: If an invalid keep strategy is provided.
     """
     if keep not in ("first", "last"):
         raise DeduplicateError(f"Invalid keep strategy: {keep!r}. Use 'first' or 'last'.")
@@ -63,3 +70,22 @@ def deduplicate(
     kept = [k for k in deduped if k not in ignore]
 
     return DeduplicateResult(env=deduped, removed_keys=removed, kept_keys=kept)
+
+
+def find_duplicates(env: Dict[str, str], ignore_keys: Optional[List[str]] = None) -> Dict[str, List[str]]:
+    """Return a mapping of duplicate values to the keys that share them.
+
+    Args:
+        env: Ordered dict of key/value pairs.
+        ignore_keys: Keys to exclude from the duplicate search.
+
+    Returns:
+        A dict where each key is a duplicated value and each value is the
+        list of env keys that share that value (only entries with 2+ keys).
+    """
+    ignore = set(ignore_keys or [])
+    value_to_keys: Dict[str, List[str]] = {}
+    for key, value in env.items():
+        if key not in ignore:
+            value_to_keys.setdefault(value, []).append(key)
+    return {v: keys for v, keys in value_to_keys.items() if len(keys) > 1}
