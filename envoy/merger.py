@@ -39,6 +39,10 @@ class MergeResult:
             lines.append("No conflicts detected.")
         return "\n".join(lines)
 
+    def conflict_keys(self) -> List[str]:
+        """Return a sorted list of keys that have conflicts."""
+        return sorted(c.key for c in self.conflicts)
+
 
 def merge_envs(
     sources: List[Tuple[str, Dict[str, str]]],
