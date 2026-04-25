@@ -88,3 +88,19 @@ def test_conflict_str_representation():
     assert "8080" in text
     assert "prod" in text
     assert "443" in text
+
+
+def test_merge_empty_sources():
+    """Merging an empty list of sources should return an empty result with no conflicts."""
+    result = merge_envs([])
+    assert result.merged == {}
+    assert not result.has_conflicts
+    assert result.sources == []
+
+
+def test_merge_single_source():
+    """Merging a single source should never produce conflicts."""
+    result = merge_envs([("only", ENV_BASE)])
+    assert result.merged == ENV_BASE
+    assert not result.has_conflicts
+    assert result.sources == ["only"]
